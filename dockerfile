@@ -47,7 +47,8 @@ RUN apt-get update -q && \
     apt-get install -y --no-install-recommends mariadb-server mariadb-client \
       libapache2-mod-php5 php5-cli php5-json wget unzip software-properties-common pwgen \
       php5-mysql php5-gd php5-mcrypt python-mysqldb rrdtool subversion whois mtr-tiny at \
-      nmap ipmitool graphviz imagemagick php5-snmp php-pear snmp graphviz fping libvirt-bin
+      nmap ipmitool graphviz imagemagick php5-snmp php-pear snmp graphviz fping libvirt-bin \
+      librrd-dev libpython-dev python-pip
 
 # Tweak my.cnf
 RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
@@ -55,6 +56,8 @@ RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
     sed -i -e 's/\(user.*=\).*/\1 nobody/g' /etc/mysql/my.cnf && \
     echo '[mysqld]' > /etc/mysql/conf.d/innodb_file_per_table.cnf && \
     echo 'innodb_file_per_table' >> /etc/mysql/conf.d/innodb_file_per_table.cnf
+
+RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils
 
 RUN mkdir -p /opt/observium/firstrun /opt/observium/logs /opt/observium/rrd /config && \
     cd /opt && \
@@ -102,6 +105,7 @@ RUN rm /etc/apache2/sites-available/default-ssl.conf && \
 COPY cron-observium /etc/cron.d/observium
 
 EXPOSE 8668/tcp
+EXPOSE 4504/tcp
 
 VOLUME ["/config","/opt/observium/logs","/opt/observium/rrd"]
 
