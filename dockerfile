@@ -48,7 +48,7 @@ RUN apt-get update -q && \
       libapache2-mod-php5 php5-cli php5-json wget unzip software-properties-common pwgen \
       php5-mysql php5-gd php5-mcrypt python-mysqldb rrdtool subversion whois mtr-tiny at \
       nmap ipmitool graphviz imagemagick php5-snmp php-pear snmp graphviz fping libvirt-bin \
-      librrd-dev python-dev python-pip gcc
+      librrd-dev python-dev python-pip gcc git
 
 # Tweak my.cnf
 RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
@@ -57,13 +57,15 @@ RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
     echo '[mysqld]' > /etc/mysql/conf.d/innodb_file_per_table.cnf && \
     echo 'innodb_file_per_table' >> /etc/mysql/conf.d/innodb_file_per_table.cnf
 
-RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool
+RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool netaddr
 
 RUN mkdir -p /opt/observium/firstrun /opt/observium/logs /opt/observium/rrd /config && \
     cd /opt && \
     wget http://172.17.30.34/observium-community-latest.tar.gz && \
     tar zxvf observium-community-latest.tar.gz && \
     rm observium-community-latest.tar.gz
+
+RUN cd /opt/observium/ && git clone https://github.com/rukechen/qrmobservium.git
 
 RUN php5enmod mcrypt && \
     a2enmod rewrite
@@ -100,6 +102,11 @@ RUN rm /etc/apache2/sites-available/default-ssl.conf && \
     rm -Rf /var/www && \
     ln -s /opt/observium/html /var/www
 
+# Configure qobserviumweb
+COPY run_web_service.py /opt/observium/
+Run mkdir /etc/service/qobserviumweb
+COPY qobserviumweb.sh /etc/service/qobserviumweb/run
+RUN chmod +x /etc/service/qobserviumweb/run
 
 # Setup Observium cron jobs
 COPY cron-observium /etc/cron.d/observium
@@ -110,5 +117,5 @@ EXPOSE 4504/tcp
 VOLUME ["/config","/opt/observium/logs","/opt/observium/rrd"]
 
 # Clean up APT when done.
-RUN apt-get autoremove -y gcc
+RUN apt-get autoremove -y gcc git
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
