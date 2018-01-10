@@ -10,6 +10,7 @@ start_mysql(){
 }
 
 # If databases do not exist, create them
+sv stop /etc/service/qobserviumweb
 if [ -f /config/databases/observium/users.ibd ]; then
   echo "Database exists."
 else
@@ -35,8 +36,22 @@ else
   chown -R nobody:users /config/databases
   chmod -R 755 /config/databases
   sleep 3
+  tmp="$(hostname -I | sed 's/ *$//g')"
+  export tmp=$tmp
+  curl -H "Content-Type:application/json" -X PUT -d '{"ID": "tmpID", "Name": "tmpName", "Address": "'"$tmp"'","Port": 4504, "Check":{"DeregisterCriticalServiceAfter":"2m", "HTTP":"http://'"$tmp"':4504/api/about", "Interval":"10s"}}' http://10.0.3.1:8500/v1/agent/service/register
   echo "Initialization complete."
 fi
+
+echo "Starting qobserviumweb..."
+while ! ps aux | grep 'runsv qobserviumweb';do
+    sleep 2
+done
+
+sv start /etc/service/qobserviumweb
+tmp="$(hostname -I | sed 's/ *$//g')"
+export tmp=$tmp
+echo "Register service to consul..."
+curl -H "Content-Type:application/json" -X PUT -d '{"ID": "tmpID", "Name": "tmpName", "Address": "'"$tmp"'", "Port": 4504, "Check":{"DeregisterCriticalServiceAfter":"2m", "HTTP":"http://'"$tmp"':4504/api/about", "Interval":"10s"}}' http://10.0.3.1:8500/v1/agent/service/register
 
 echo "Starting MariaDB..."
 /usr/bin/mysqld_safe --skip-syslog --datadir='/config/databases'
