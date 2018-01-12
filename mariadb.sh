@@ -49,9 +49,11 @@ done
 
 sv start /etc/service/qobserviumweb
 tmp="$(hostname -I | sed 's/ *$//g')"
+defaultroute="$(ip route | grep 'default via' | awk '{print $3}')"
 export tmp=$tmp
+export DEFAULTROUTE=$defaultroute
 echo "Register service to consul..."
-curl -H "Content-Type:application/json" -X PUT -d '{"ID": "tmpID", "Name": "tmpName", "Address": "'"$tmp"'", "Port": 4504, "Check":{"DeregisterCriticalServiceAfter":"2m", "HTTP":"http://'"$tmp"':4504/api/about", "Interval":"10s"}}' http://10.0.3.1:8500/v1/agent/service/register
+curl -H "Content-Type:application/json" -X PUT -d '{"ID": "tmpID", "Name": "tmpName", "Address": "'"$tmp"'", "Port": 4504, "Check":{"DeregisterCriticalServiceAfter":"2m", "HTTP":"http://'"$tmp"':4504/api/about", "Interval":"10s"}}' http://"$DEFAULTROUTE":8500/v1/agent/service/register
 
 echo "Starting MariaDB..."
 /usr/bin/mysqld_safe --skip-syslog --datadir='/config/databases'
