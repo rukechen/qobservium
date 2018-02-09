@@ -61,7 +61,7 @@ RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rr
 
 RUN mkdir -p /opt/observium/firstrun /opt/observium/logs /opt/observium/rrd /config && \
     cd /opt && \
-    wget http://172.17.30.34/observium-community-latest.tar.gz && \
+    wget http://172.17.30.48/observium-community-latest.tar.gz && \
     tar zxvf observium-community-latest.tar.gz && \
     rm observium-community-latest.tar.gz
 
@@ -110,6 +110,7 @@ RUN chmod +x /etc/service/qobserviumweb/run
 
 # Setup Observium cron jobs
 COPY cron-observium /etc/cron.d/observium
+
 
 EXPOSE 8668/tcp
 EXPOSE 4504/tcp
