@@ -57,7 +57,7 @@ RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
     echo '[mysqld]' > /etc/mysql/conf.d/innodb_file_per_table.cnf && \
     echo 'innodb_file_per_table' >> /etc/mysql/conf.d/innodb_file_per_table.cnf
 
-RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool netaddr
+RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool netaddr gunicorn
 
 RUN mkdir -p /opt/observium/firstrun /opt/observium/logs /opt/observium/rrd /config && \
     cd /opt && \
@@ -104,6 +104,7 @@ RUN rm /etc/apache2/sites-available/default-ssl.conf && \
 
 # Configure qobserviumweb
 COPY run_web_service.py /opt/observium/
+COPY gunicorn /opt/observium/
 Run mkdir /etc/service/qobserviumweb
 COPY qobserviumweb.sh /etc/service/qobserviumweb/run
 RUN chmod +x /etc/service/qobserviumweb/run
