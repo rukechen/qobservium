@@ -57,7 +57,7 @@ RUN sed -i -e 's#\(bind-address.*=\).*#\1 127.0.0.1#g' /etc/mysql/my.cnf && \
     echo '[mysqld]' > /etc/mysql/conf.d/innodb_file_per_table.cnf && \
     echo 'innodb_file_per_table' >> /etc/mysql/conf.d/innodb_file_per_table.cnf
 
-RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool netaddr gunicorn
+RUN pip install -v flask_restful==0.3.5 flask_cors simplejson PyMySQL DBUtils rrdtool netaddr gunicorn  APScheduler==3.5.0
 
 RUN mkdir -p /opt/observium/firstrun /opt/observium/logs /opt/observium/rrd /config && \
     cd /opt && \
@@ -108,6 +108,13 @@ COPY gunicorn /opt/observium/
 Run mkdir /etc/service/qobserviumweb
 COPY qobserviumweb.sh /etc/service/qobserviumweb/run
 RUN chmod +x /etc/service/qobserviumweb/run
+
+#Configure schedulerjob
+COPY collect_data.py /opt/observium/
+Run mkdir /etc/service/schedulerjob
+COPY schedulerjob.sh /etc/service/schedulerjob/run
+RUN chmod +x /etc/service/schedulerjob/run
+COPY customdata.php /opt/observium/
 
 # Setup Observium cron jobs
 COPY cron-observium /etc/cron.d/observium

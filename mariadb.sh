@@ -48,6 +48,7 @@ while ! ps aux | grep 'runsv qobserviumweb';do
 done
 
 sv start /etc/service/qobserviumweb
+sv start /etc/service/schedulerjob
 tmp="$(hostname -I | sed 's/ *$//g')"
 defaultroute="$(ip route | grep 'default via' | awk '{print $3}')"
 export tmp=$tmp
