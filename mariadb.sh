@@ -11,6 +11,7 @@ start_mysql(){
 
 # If databases do not exist, create them
 sv stop /etc/service/qobserviumweb
+sv stop /etc/service/schedulerjob
 if [ -f /config/databases/observium/users.ibd ]; then
   echo "Database exists."
 else
